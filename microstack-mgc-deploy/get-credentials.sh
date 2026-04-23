@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 SSH_USER="ubuntu"
 
 IP=$(tofu output -raw vm_public_ip) && \

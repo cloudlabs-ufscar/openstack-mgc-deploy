@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 SSH_USER="ubuntu"
 
 tofu plan
