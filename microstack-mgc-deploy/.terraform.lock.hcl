@@ -1,0 +1,18 @@
+# This file is maintained automatically by "tofu init".
+# Manual edits may be lost in future updates.
+
+provider "registry.opentofu.org/magalucloud/mgc" {
+  version = "0.46.1"
+  hashes = [
+    "h1:STwxbQHbTaRCJYH/Ek4bWcDFH+SJme+a0DxEsPturtk=",
+    "zh:1e80e7a7933176323a072cc6cfc4b9bbcbf31d1476af598759a41ca315d775fc",
+    "zh:3669c760154f02e6a6403061984d06c320ec514c6e9d813595adebe048ad856e",
+    "zh:3ce21f448f93f5977d92d249e6c12449dc8bf03aa40522ca204972d5d2f42a49",
+    "zh:3d5978db25143e69fd4b13bf321580120e3130631dda36d234349975766c0d27",
+    "zh:56593df6b68d2179650bf411cdf8dcf1a2497d502dde07ed5ec16401e92bf547",
+    "zh:890df766e9b839623b1f0437355032a3c006226a6c200cd911e15ee1a9014e9f",
+    "zh:9fd16eefda4f4cdf45d97c8f69f772d7b1ed9784c994b27892190077eeb0e519",
+    "zh:cb8f7d0abb59ff420905174e1e0a5370669ab0eefd199a2787116e6ef0978e44",
+    "zh:eebb6a74a9b0be22e7b342a4b1d11b64671ea410449906d481e1e12073881f5e",
+  ]
+}
