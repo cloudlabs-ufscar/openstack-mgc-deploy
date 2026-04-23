@@ -2,7 +2,7 @@ Terraform code for Microstack deployment in Magalu Cloud (MGC)
 MicroStack allows for a quick and easy single-node OpenStack deployment, great for test environments and experiments. Here, we deploy MicroStack on top of a MGC VM using Terraform, so that the VM can be quickly created and destroyed when needed.
 
 1. Create .env with your api key and ssh key name
-2. Replace my-local-key with your ssh key's name in cloud-init.yaml
+2. Replace ssh-name with your ssh key's name in cloud-init.yaml
 2. Run `terraform init`
 3. Run `./run.sh`
 4. After Microstack is done installing, use `get-credentials.sh` to get the default keystone password
