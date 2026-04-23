@@ -39,6 +39,12 @@ variable "machine_type" {
   default     = "BV4-16-100"
 }
 
+variable "ssh_user" {
+  description = "SSH user used by the VM image."
+  type        = string
+  default     = "ubuntu"
+}
+
 resource "mgc_virtual_machine_instances" "microstack_test" {
   name = var.vm_name
   machine_type = var.machine_type
@@ -47,6 +53,7 @@ resource "mgc_virtual_machine_instances" "microstack_test" {
   allocate_public_ipv4 = true
   user_data = base64encode(templatefile("${path.module}/cloud-init.yaml", {
     microstack_keypair_name = var.microstack_keypair_name
+    ssh_user                = var.ssh_user
   }))
 }
 

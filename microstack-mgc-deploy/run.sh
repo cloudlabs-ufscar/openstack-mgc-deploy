@@ -13,7 +13,7 @@ mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/known_hosts" && \
 ssh-keyscan -H "$IP" >> "$HOME/.ssh/known_hosts" 2>/dev/null && \
 echo "Waiting for SSH to boot on $IP..." && \
 elapsed=0 && \
-while ! ssh -o ConnectTimeout=2 "${SSH_USER}@${IP}" "echo 'SSH is up!'" 2>/dev/null; do \
+while ! ssh -o ConnectTimeout=2 "${SSH_USER}@${IP}" "true" 2>/dev/null; do \
   if [ "$elapsed" -ge "$MAX_SSH_WAIT_SECONDS" ]; then
     echo
     echo "Timed out waiting for SSH after ${MAX_SSH_WAIT_SECONDS}s."
