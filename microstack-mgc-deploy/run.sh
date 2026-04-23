@@ -11,5 +11,6 @@ mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/known_hosts" && \
 (ssh-keygen -R "$IP" >/dev/null 2>&1 || true) && \
 ssh-keyscan -H "$IP" >> "$HOME/.ssh/known_hosts" 2>/dev/null && \
 echo "Waiting for SSH to boot on $IP..." && \
-while ! ssh -o ConnectTimeout=2 "${SSH_USER}@${IP}" "echo 'SSH is up!'" 2>/dev/null; do sleep 2; done && \
+while ! ssh -o ConnectTimeout=2 "${SSH_USER}@${IP}" "echo 'SSH is up!'" 2>/dev/null; do printf "."; sleep 2; done && \
+echo && \
 ssh "${SSH_USER}@${IP}" "tail -f /var/log/cloud-init-output.log"

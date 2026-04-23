@@ -2,7 +2,7 @@
 
 Terraform code for MicroStack deployment in Magalu Cloud (MGC). MicroStack allows for a quick and easy single-node OpenStack deployment, great for test environments and experiments. Here, we deploy MicroStack on top of a MGC VM using Terraform, so that the VM can be quickly created and destroyed when needed.
 
-1. Export your MGC API key:
+1. Export your MGC API key (from the Magalu Cloud console/API credentials page):
    `export MGC_API_KEY="<your-api-key>"`
 2. Create `terraform.tfvars` with your SSH key name:
    `ssh_key_name = "<your-mgc-ssh-key-name>"`
