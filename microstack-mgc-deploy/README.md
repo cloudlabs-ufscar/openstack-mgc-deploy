@@ -29,6 +29,6 @@ Getting allocated IP address:
 `microstack.openstack server list`
 
 Since the MGC VM has a public IP, and the OpenStack instances are sitting on an internal virtual network managed by Neutron, the VM acts as a Jump Host or Bastion server.
-We can use SSH's ProxyJump feature ot route our connection through the VM, going straight from our host computer straight to the OpenStack instance.
+We can use SSH's ProxyJump feature to route our connection through the VM, going straight from our host computer straight to the OpenStack instance.
 Say we have an instance with a floating IP `10.20.20.15`, using the default CirrOS image, we can SSH into it via:
 `ssh -J ubuntu@<VM_PUBLIC_IP> cirros@10.20.20.15`
