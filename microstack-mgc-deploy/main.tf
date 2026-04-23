@@ -19,7 +19,7 @@ variable "region" {
 variable "vm_name" {
   description = "Name of the VM instance for the MicroStack host."
   type        = string
-  default     = "microstack_test"
+  default     = "microstack-test"
 }
 
 variable "ssh_key_name" {

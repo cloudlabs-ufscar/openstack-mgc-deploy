@@ -11,6 +11,8 @@ Terraform code for MicroStack deployment in Magalu Cloud (MGC). MicroStack allow
 5. Run `./run.sh`
 6. After MicroStack is done installing, use `get-credentials.sh` to get the default keystone password
 
+> **Note:** `cloud-init.yaml` installs MicroStack with `--beta --devmode` to simplify lab/test setup. `--devmode` relaxes confinement and is not recommended for production environments.
+
 To access the web interface, use the VM's public ip on your web browser, it should work by default. If not, tunnel into your VM using `ssh -L 8080:localhost:80 ubuntu@<VM_PUBLIC_IP>` and then access it via http://localhost:8080.
 To interact with the cluster directly, SSH into your VM and use the `microstack.openstack` prefix to run OpenStack CLI commands.
 
@@ -30,6 +32,6 @@ Getting allocated IP address:
 `microstack.openstack server list`
 
 Since the MGC VM has a public IP, and the OpenStack instances are sitting on an internal virtual network managed by Neutron, the VM acts as a Jump Host or Bastion server.
-We can use SSH's ProxyJump feature to route our connection through the VM, going straight from our host computer straight to the OpenStack instance.
+We can use SSH's ProxyJump feature to route our connection through the VM, going from our host computer directly to the OpenStack instance.
 Say we have an instance with a floating IP `10.20.20.15`, using the default CirrOS image, we can SSH into it via:
 `ssh -J ubuntu@<VM_PUBLIC_IP> cirros@10.20.20.15`
