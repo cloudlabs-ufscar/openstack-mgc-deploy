@@ -16,7 +16,7 @@ runcmd:
     snap install microstack --beta --devmode
     microstack init --auto --control
 
-    microstack.openstack keypair create --public-key /home/ubuntu/.ssh/authorized_keys ssh-lucas
+    microstack.openstack keypair create --public-key /home/ubuntu/.ssh/authorized_keys ${microstack_keypair_name}
     microstack.openstack security group create lab-secgroup
     microstack.openstack security group rule create --proto icmp lab-secgroup
     microstack.openstack security group rule create --proto tcp --dst-port 22 lab-secgroup
