@@ -6,7 +6,7 @@ Terraform code for MicroStack deployment in Magalu Cloud (MGC). MicroStack allow
    `export MGC_API_KEY="<your-api-key>"`
 2. Create `terraform.tfvars` with your SSH key name:
    `ssh_key_name = "<your-mgc-ssh-key-name>"`
-3. (Optional) Set custom values for `region`, `vm_name` or `microstack_keypair_name` in `terraform.tfvars`.
+3. (Optional) Set custom values for `region`, `vm_name`, `machine_type` or `microstack_keypair_name` in `terraform.tfvars`.
 4. Run `tofu init`
 5. Run `./run.sh`
 6. After MicroStack is done installing, use `get-credentials.sh` to get the default keystone password

@@ -33,9 +33,15 @@ variable "microstack_keypair_name" {
   default     = "my-local-key"
 }
 
+variable "machine_type" {
+  description = "MGC machine type for the MicroStack VM."
+  type        = string
+  default     = "BV4-16-100"
+}
+
 resource "mgc_virtual_machine_instances" "microstack_test" {
   name = var.vm_name
-  machine_type = "BV4-16-100"
+  machine_type = var.machine_type
   image = "cloud-ubuntu-24.04 LTS"
   ssh_key_name = var.ssh_key_name
   allocate_public_ipv4 = true
