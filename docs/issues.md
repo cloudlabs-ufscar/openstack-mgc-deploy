@@ -1,63 +1,6 @@
-# openstack-mgc-deploy
-Automation scripts for deploying OpenStack in Magalu Cloud
-Single-node deployment in the `microstack-mgc-deploy` folder
 
-For multi-node deployment:
-```
-# Install Python dependencies
-sudo apt update
-sudo apt install python3-venv python3-dev libffi-dev gcc libssl-dev
+# Documenting issues that we ran into during deploy attempts
 
-# Create and activate a virtual environment
-python3 -m venv ~/kolla-venv
-source ~/kolla-venv/bin/activate
-
-# Install Ansible and Kolla-Ansible
-pip install -U pip
-pip install ansible
-pip install git+https://opendev.org/openstack/kolla-ansible@master
-kolla-ansible install-deps
-
-# Create Kolla-Ansible configuration
-sudo mkdir -p /etc/kolla
-sudo chown $USER:$USER /etc/kolla
-cp -r ~/kolla-venv/share/kolla-ansible/etc_examples/kolla/* /etc/kolla/
-```
-
-Create and populate your .env file, then:
-
-```
-tofu init
-source .env
-tofu plan
-tofu apply
-```
-
-This creates the VMs and the `multinode` Ansible file
-
-To find out the network interfaces available in the VMs:
-```
-sh -o StrictHostKeyChecking=no ubuntu@$(tofu output -json cluster_ips | jq -r '.controller') "ip -br a"
-```
-For MGC, we have `ens3` available. Access `/etc/kolla/globals.yml` and edit the `network_interface` and `neutron_external_interface` property to `ens3`
-
-Finally, you can run:
-
-```
-kolla-genpwd
-kolla-ansible bootstrap-servers -i ./multinode 
-kolla-ansible prechecks -i ./multinode 
-kolla-ansible pull -i ./multinode 
-kolla-ansible deploy -i ./multinode 
-```
-
-To get the credentials:
-```
-kolla-ansible post-deploy
-cat /etc/kolla/admin-openrc.sh
-```
-
-# Documenting Hardships on Kolla-Ansible deployment
 First error: eth0 is unreachable
 Solution: Check what network interfaces are available on MGC VMs:
 ```
@@ -158,5 +101,80 @@ Kolla Ansible playbook(s) /home/lucas/kolla-venv/share/kolla-ansible/ansible/sit
 ```
 Solution: append data from original kolla-ansible inventory `multinode` file, added to `deploy.sh`
 
+Sixth error:
+Stuck on
+`TASK [openvswitch : Ensuring OVS ports are properly setup]`
+In the end, it seems we couldn't make it work out with only one NIC per VM. OpenStack usually asks for your deployment environment to have two NICs, one for external and another for internal communications. During our initial research, it seemed as if it would work regardless with only one NIC, but we were running into a lot of issues during deployment, so we decided to try and deploy the VMs with two NICs.
+We added mgc_network_vpcs_interfaces to the terraform file, to make sure the VMs have two network interfaces, and also added a cloud-init bash script to the VMs so this second interface is UP. Now we can edit globals.yml and test if everything works as intended.
 
+Seventh error:
+Stuck on 
+`TASK [openstack.kolla.docker : Update the apt cache]`
+After adding new NIC to VMs.
+Magalu Cloud VMs are assigned both an IPv4 and IPv6 address automatically. When the Kolla Ansible bootstrap-servers command hits the apt update task, Ubuntu's package manager natively attempts to communicate with archive.ubuntu.com via IPv6 first.
+The IPv6 routes (or peering to the specific Canonical IPs) frequently time out in this region, which forces apt to wait multiple minutes falling back slowly to other addresses. Because the connection is silent for several minutes while trying to resolve these slow mirrors, the intermediate NAT firewall drops the idle TCP SSH session. The local Ansible SSH multiplexing socket ([mux]) completely hangs because it never receives the final dropped exit status packet, locking your deploy terminal indefinitely.
+Changed `deploy.sh` to force APT to utilize IPv4 and switch the Ubuntu repositories to the Brazilian mirrors.
 
+Eigth error:
+The deploy failed due to a RabbitMQ connection timeout which prevented Nova service registration, and a MariaDB verification timeout directly from Kolla, despite the MariaDB GALERA cluster actually being in a healthy and Synced state (wsrep_cluster_status Primary, wsrep_local_state_comment Synced) on the controller (`172.18.1.33`).
+Kolla-Ansible natively uses HAProxy and Keepalived to establish a high-availability Virtual IP (VIP), which defaults to an unassigned IP in your subnet (`172.18.15.250` in this case).
+Because Magalu Cloud (like most cloud providers) runs a strict Software-Defined Network underneath, it will drop/block any ARP packets or IP traffic referencing an IP address that isn't formally assigned to your VM's network interface by the cloud platform itself. Because of this boundary, your compute nodes hit a No route to host block whenever they attempted to reach OpenStack core services at `172.18.15.250`.
+Since we are running a single-node controller setup, there's no need for these High-Availability failovers (Keepalived and HAProxy), so we can just turn them off on `globals.yml`. Automated in `deploy.sh`
+
+Ninth error:
+RUNNING HANDLER [mariadb : Wait for first MariaDB service port liveness] 
+```
+[ERROR]: Task failed: Module failed: Timeout when waiting for search string MariaDB in 172.18.3.206:3306
+Origin: /home/lucas/kolla-venv/share/kolla-ansible/ansible/roles/mariadb/handlers/main.yml:23:3
+
+21
+22 # NOTE(yoctozepto): We have to loop this to avoid breaking on connection resets
+23 - name: Wait for first MariaDB service port liveness
+     ^ column 3
+
+fatal: [201.54.23.251]: FAILED! => {
+    "attempts": 10,
+    "changed": false,
+    "elapsed": 61,
+    "invocation": {
+        "module_args": {
+            "active_connection_states": [
+                "ESTABLISHED",
+                "FIN_WAIT1",
+                "FIN_WAIT2",
+                "SYN_RECV",
+                "SYN_SENT",
+                "TIME_WAIT"
+            ],
+            "connect_timeout": 1,
+            "delay": 0,
+            "exclude_hosts": null,
+            "host": "172.18.3.206",
+            "msg": null,
+            "path": null,
+            "port": 3306,
+            "search_regex": "MariaDB",
+            "sleep": 1,
+            "state": "started",
+            "timeout": 60
+        }
+    },
+    "msg": "Timeout when waiting for search string MariaDB in 172.18.3.206:3306"
+}
+
+PLAY RECAP ****************************************************************************************************************
+201.54.20.210              : ok=34   changed=23   unreachable=0    failed=0    skipped=7    rescued=0    ignored=0   
+201.54.23.248              : ok=34   changed=23   unreachable=0    failed=0    skipped=7    rescued=0    ignored=0   
+201.54.23.251              : ok=82   changed=47   unreachable=0    failed=1    skipped=96   rescued=0    ignored=1   
+
+Kolla Ansible playbook(s) /home/lucas/kolla-venv/share/kolla-ansible/ansible/site.yml exited 2
+clean_up Deploy
+```
+
+When we set kolla_internal_vip_address equal to the node's local IP (which we did to bypass the cloud routing issue), we caused an internal port collision between two Kolla database components:
+
+ProxySQL: A load balancer that defaults to being deployed (enable_proxysql: true natively). It bound to the "VIP" address on port 3306.
+MariaDB: The actual database, which tries to bind to the "local" node address on port 3306.
+Since the VIP and the local node IP are now completely identical in our setup (172.18.3.206), ProxySQL grabbed port 3306 a fraction of a second earlier. When MariaDB attempted to start right behind it, it hit an Address already in use error and crashed, causing Ansible to wait forever for MariaDB to report readiness.
+
+Again, we only have a single controller and disabled HAProxy, so ProxySQL is also completely unnecessary.

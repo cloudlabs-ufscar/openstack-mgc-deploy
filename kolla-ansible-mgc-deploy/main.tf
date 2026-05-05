@@ -18,6 +18,71 @@ resource "mgc_virtual_machine_instances" "openstack_nodes" {
   machine_type         = "BV4-16-100"
   image                = "cloud-ubuntu-24.04 LTS"
   ssh_key_name         = var.ssh_key_name
+
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    cat << 'NETPLAN' > /etc/netplan/99-secondary-nic.yaml
+    network:
+      version: 2
+      ethernets:
+        ens7:
+          dhcp4: false
+          dhcp6: false
+          optional: true
+    NETPLAN
+    chmod 600 /etc/netplan/99-secondary-nic.yaml
+    netplan apply
+    ip link set ens7 up
+  EOF
+  )
+}
+
+# Create a security group to allow SSH access
+resource "mgc_network_security_groups" "ssh_sg" {
+  name        = "kolla-ssh-sg"
+  description = "Security group for SSH access"
+}
+
+# Add SSH rule to the security group
+resource "mgc_network_security_groups_rules" "ssh_rule" {
+  description       = "Allow SSH access"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  port_range_min    = 22
+  port_range_max    = 22
+  protocol          = "tcp"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = mgc_network_security_groups.ssh_sg.id
+}
+
+# Allow Kolla nodes to talk to each other (Ingress all from internal subnets, or easily 0.0.0.0/0 for lab)
+resource "mgc_network_security_groups_rules" "ingress_all_lab" {
+  description       = "Allow all ingress traffic for Kolla services"
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = mgc_network_security_groups.ssh_sg.id
+}
+
+# Attach security group to the primary interface of each VM
+resource "mgc_network_security_groups_attach" "ssh_sg_attach" {
+  for_each          = mgc_virtual_machine_instances.openstack_nodes
+  security_group_id = mgc_network_security_groups.ssh_sg.id
+  interface_id      = each.value.network_interface_id
+}
+
+# Create secondary network interfaces
+resource "mgc_network_vpcs_interfaces" "secondary_interfaces" {
+  for_each = mgc_virtual_machine_instances.openstack_nodes
+  name     = "${each.value.name}-secondary-nic"
+  vpc_id   = each.value.vpc_id
+}
+
+# Attach secondary interfaces to the instances
+resource "mgc_virtual_machine_interface_attach" "secondary_attachments" {
+  for_each     = mgc_virtual_machine_instances.openstack_nodes
+  instance_id  = each.value.id
+  interface_id = mgc_network_vpcs_interfaces.secondary_interfaces[each.key].id
 }
 
 # Manage public IPv4 addresses as Terraform resources so they are deleted on destroy.

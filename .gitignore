@@ -58,3 +58,6 @@ multinode
 
 # Agent helper files
 .github
+
+# Kolla-Ansible deployment logs
+ansible_deploy.log

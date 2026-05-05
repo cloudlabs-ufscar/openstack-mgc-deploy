@@ -20,8 +20,8 @@ The repository is divided into two main deployment strategies:
 
 Each project contains its own specific instructions and requirements. To begin, navigate to the directory of the deployment type you wish to use and read the local `README.md` file:
 
-* For **Single-Node**, see: [`microstack-mgc-deploy/README.md`](./microstack-mgc-deploy/README.md)
-* For **Multi-Node**, see: [`kalla-ansible-mgc-deploy/README.md`](./kalla-ansible-mgc-deploy/README.md)
+* For **Single-Node, MicroStack installation**, see: [`microstack-mgc-deploy/README.md`](./microstack-mgc-deploy/README.md)
+* For **Multi-Node, Kolla-Ansible installation**, see: [`kalla-ansible-mgc-deploy/README.md`](./kalla-ansible-mgc-deploy/README.md)
 
 ## Prerequisites
 
