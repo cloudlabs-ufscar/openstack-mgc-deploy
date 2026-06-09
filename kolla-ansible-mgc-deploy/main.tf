@@ -8,7 +8,7 @@ terraform {
 
 provider "mgc" {
   api_key = var.mgc_api_key
-  region  = "br-se1"
+  region  = "br-ne1"
 }
 
 # Provision 3 instances using a set
@@ -25,14 +25,14 @@ resource "mgc_virtual_machine_instances" "openstack_nodes" {
     network:
       version: 2
       ethernets:
-        ens7:
+        ens8:
           dhcp4: false
           dhcp6: false
           optional: true
     NETPLAN
     chmod 600 /etc/netplan/99-secondary-nic.yaml
     netplan apply
-    ip link set ens7 up
+    ip link set ens8 up
   EOF
   )
 }
@@ -73,9 +73,10 @@ resource "mgc_network_security_groups_attach" "ssh_sg_attach" {
 
 # Create secondary network interfaces
 resource "mgc_network_vpcs_interfaces" "secondary_interfaces" {
-  for_each = mgc_virtual_machine_instances.openstack_nodes
-  name     = "${each.value.name}-secondary-nic"
-  vpc_id   = each.value.vpc_id
+  for_each      = mgc_virtual_machine_instances.openstack_nodes
+  name          = "${each.value.name}-secondary-nic"
+  vpc_id        = each.value.vpc_id
+  anti_spoofing = false
 }
 
 # Attach secondary interfaces to the instances

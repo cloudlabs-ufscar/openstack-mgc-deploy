@@ -38,7 +38,8 @@ for ip in $IPS; do
     
     # Fix APT hanging issues on MGC NAT timeouts
     echo 'Acquire::ForceIPv4 \"true\";' | sudo tee /etc/apt/apt.conf.d/99force-ipv4 > /dev/null
-    sudo sed -i 's/archive.ubuntu.com/br.archive.ubuntu.com/g; s/security.ubuntu.com/br.archive.ubuntu.com/g' /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list 2>/dev/null || true
+    sudo sed -i 's|http://br-ne-1[a-z]\.clouds\.br\.archive\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+    sudo sed -i 's|http://archive\.ubuntu\.com/ubuntu/|http://br.archive.ubuntu.com/ubuntu/|g; s|http://security\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
     "
 done
 
@@ -70,6 +71,8 @@ sed -i 's/#kolla_base_distro: "rocky"/kolla_base_distro: "ubuntu"/g' /etc/kolla/
 # Strip out any existing VIP configuration/haproxy config to avoid duplicates
 sed -i '/^#\?kolla_internal_vip_address/d' /etc/kolla/globals.yml || true
 sed -i '/^#\?enable_haproxy/d' /etc/kolla/globals.yml || true
+# Ensure the file ends with a newline to avoid corrupted lines
+echo "" >> /etc/kolla/globals.yml
 echo "kolla_internal_vip_address: \"$VIP\"" >> /etc/kolla/globals.yml
 echo "enable_haproxy: \"no\"" >> /etc/kolla/globals.yml
 echo "enable_proxysql: \"no\"" >> /etc/kolla/globals.yml
@@ -79,3 +82,16 @@ kolla-ansible -vvv bootstrap-servers -i ./multinode
 kolla-ansible -vvv prechecks -i ./multinode 
 kolla-ansible -vvv pull -i ./multinode 
 kolla-ansible -vvv deploy -i ./multinode
+
+# Fix OVS fail_mode on all nodes for MGC VPC compatibility
+# Neutron OVS agent sets fail_mode=secure on all bridges, but MGC's VPC
+# drops untagged return traffic when bridging rules are strict.
+# Changing to standalone allows normal L2 learning to handle flat networks.
+echo "Setting OVS fail_mode to standalone on all nodes..."
+for ip in $IPS; do
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ubuntu@"$ip" \
+        "sudo docker exec openvswitch_vswitchd ovs-vsctl set-fail-mode br-int standalone 2>/dev/null; \
+         sudo docker exec openvswitch_vswitchd ovs-vsctl set-fail-mode br-tun standalone 2>/dev/null; \
+         sudo docker exec openvswitch_vswitchd ovs-vsctl set-fail-mode br-ex standalone 2>/dev/null" || true
+done
+echo "OVS fail_mode fix applied."

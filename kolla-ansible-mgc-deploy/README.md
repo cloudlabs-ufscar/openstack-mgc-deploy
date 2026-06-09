@@ -43,7 +43,7 @@ To find out the network interfaces available in the VMs:
 ssh -o StrictHostKeyChecking=no ubuntu@$(tofu output -json cluster_ips | jq -r '.controller') "ip -br a"
 ```
 
-In this deployment, we have `ens3` and `ens7` available. Access `/etc/kolla/globals.yml` and edit the `network_interface` to `"ens3"` and `neutron_external_interface` property to `"ens7"`.
+In this deployment, we have `ens3` and `ens8` available. Access `/etc/kolla/globals.yml` and edit the `network_interface` to `"ens3"` and `neutron_external_interface` property to `"ens8"`.
 _(Note: The `./deploy.sh` script will automatically handle configuring the `kolla_internal_vip_address` and will disable `haproxy` and `proxysql` to support this single-node controller architecture without port collisions on Magalu Cloud.)_
 
 Finally, you can run:
@@ -84,3 +84,15 @@ openstack hypervisor list
 # Documenting Hardships on Kolla-Ansible overcloud deployment
 
 -> Read [docs/issues.md](docs/issues.md)
+
+# Connecting to OpenStack tenant VMs from the controller
+
+After creating a floating IP and attaching it to a VM, you must add a route on the
+controller so traffic to the floating IP goes through the OVS bridge:
+
+```bash
+sudo ip route replace <FLOATING_IP> dev br-ex
+```
+
+Without this route, SSH to the floating IP will fail with "No route to host" because
+the controller's default route goes through `ens3` instead of `br-ex`.
