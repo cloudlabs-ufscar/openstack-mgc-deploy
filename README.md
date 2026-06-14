@@ -12,16 +12,22 @@ The repository is divided into two main deployment strategies:
 * **Main Tools:** OpenTofu, Snap (MicroStack), Cloud-init.
 
 ### 2. Multi-Node Deployment (Kolla-Ansible)
-* **Directory:** `kalla-ansible-mgc-deploy/`
+* **Directory:** `kolla-ansible-mgc-deploy/`
 * **Description:** A production-oriented, multi-node cluster deployment (Controller and Compute nodes) managed by Kolla-Ansible. Includes automated inventory generation and environment bootstrapping.
 * **Main Tools:** OpenTofu, Ansible, Kolla-Ansible, Docker.
+
+### 3. Lab Multi-Controller (Jumphost + N Single-Node)
+* **Directory:** `lab-multi-controller/`
+* **Description:** Laboratory setup with a single jumphost VM (public IP) that auto-provisions and manages multiple single-node OpenStack (MicroStack) controllers. Controllers are only accessible through the jumphost.
+* **Main Tools:** OpenTofu, cloud-init, MicroStack (snap), Ansible.
 
 ## How to Get Started
 
 Each project contains its own specific instructions and requirements. To begin, navigate to the directory of the deployment type you wish to use and read the local `README.md` file:
 
 * For **Single-Node, MicroStack installation**, see: [`microstack-mgc-deploy/README.md`](./microstack-mgc-deploy/README.md)
-* For **Multi-Node, Kolla-Ansible installation**, see: [`kalla-ansible-mgc-deploy/README.md`](./kalla-ansible-mgc-deploy/README.md)
+* For **Multi-Node, Kolla-Ansible installation**, see: [`kolla-ansible-mgc-deploy/README.md`](./kolla-ansible-mgc-deploy/README.md)
+* For **Lab Multi-Controller (Jumphost)**, see: [`lab-multi-controller/README.md`](./lab-multi-controller/README.md)
 
 ## Prerequisites
 

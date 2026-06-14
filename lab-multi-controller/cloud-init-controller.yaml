@@ -1,0 +1,29 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - snapd
+
+write_files:
+  - path: /etc/apt/apt.conf.d/99force-ipv4
+    content: |
+      Acquire::ForceIPv4 "true";
+
+ssh_authorized_keys:
+  - JUMPHOST_SSH_KEY
+
+runcmd:
+  - |
+    sed -i 's|http://br-ne-1[a-z]\.clouds\.br\.archive\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+    sed -i 's|http://archive\.ubuntu\.com/ubuntu/|http://br.archive.ubuntu.com/ubuntu/|g; s|http://security\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+    apt-get update
+    systemctl daemon-reload
+    systemctl restart snapd.service
+    snap wait system seed
+    snap install microstack --beta --devmode
+    microstack init --auto --control
+    microstack.openstack keypair create --public-key /home/ubuntu/.ssh/authorized_keys ssh-key
+    microstack.openstack security group create lab-secgroup
+    microstack.openstack security group rule create --proto icmp lab-secgroup
+    microstack.openstack security group rule create --proto tcp --dst-port 22 lab-secgroup
