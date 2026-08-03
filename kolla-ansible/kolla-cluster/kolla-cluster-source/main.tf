@@ -19,7 +19,7 @@ locals {
 }
 
 resource "mgc_virtual_machine_instances" "openstack_nodes" {
-  for_each     = toset(["controller", "compute-01", "compute-02"])
+  for_each     = toset(["controller", "compute-01"])
   name         = "${local.prefix}-${each.key}"
   machine_type = "BV4-16-100"
   image        = "cloud-ubuntu-24.04 LTS"
@@ -124,8 +124,6 @@ resource "local_file" "ansible_inventory" {
 
     [compute]
     ${mgc_network_public_ips.openstack_node_public_ips["compute-01"].public_ip} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-    ${mgc_network_public_ips.openstack_node_public_ips["compute-02"].public_ip} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
     [monitoring]
     ${mgc_network_public_ips.openstack_node_public_ips["controller"].public_ip} ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
