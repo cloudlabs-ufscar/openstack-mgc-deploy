@@ -1,0 +1,7 @@
+[21:09:08] ============================================
+[21:09:08]  Network Migration Test: kolla-src -> kolla-tgt
+[21:09:08] ============================================
+[21:09:08] 
+[21:09:08] === PHASE -1: Pre-flight checks ===
+[21:09:08] Checking source cluster (201.23.7.213)...
+[21:09:08] ERROR: Cannot reach source cluster

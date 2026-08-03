@@ -1,0 +1,28 @@
+=========================================
+ Migration Test Results
+=========================================
+Run:         20260802-225413
+Source:      kolla-src (201.23.7.213, VIP: 172.18.3.63)
+Target:      kolla-tgt (201.23.7.215, VIP: 172.18.0.253)
+Source VM:   10.0.0.15 (on 201.23.7.195)
+Target VM:   10.0.0.15 (on 201.23.7.210)
+Image:       cirros | Flavor: m1.tiny
+
+Timing
+------
+Setup:              72s
+Recovery (target):  188s
+Network downtime:   174s
+Total:              260s
+VM stop -> ping up: 1785722139 -> 1785722313
+
+Network Metrics
+---------------
+Ping sent:     0
+0
+Ping received: 0
+0
+Packet loss:   %
+Ping log:      ./migration-results/ping-20260802-225413.log
+
+IP preserved:  YES

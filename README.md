@@ -21,13 +21,19 @@ The repository is divided into two main deployment strategies:
 * **Description:** Laboratory setup with a single jumphost VM (public IP) that auto-provisions and manages multiple single-node OpenStack (MicroStack) controllers. Controllers are only accessible through the jumphost.
 * **Main Tools:** OpenTofu, cloud-init, MicroStack (snap), Ansible.
 
+### 4. Lab Kolla Multi-Controller (Jumphost + N Kolla All-in-One)
+* **Directory:** `lab-kolla-multi-controller/`
+* **Description:** Laboratory setup with a jumphost that provisions multiple Kolla-Ansible all-in-one OpenStack clusters. Each node is a complete Docker-based OpenStack with working OVS/OVN networking. For migration testing where MicroStack's OVN is broken.
+* **Main Tools:** Terraform, cloud-init, Kolla-Ansible, Docker, Ansible.
+
 ## How to Get Started
 
 Each project contains its own specific instructions and requirements. To begin, navigate to the directory of the deployment type you wish to use and read the local `README.md` file:
 
 * For **Single-Node, MicroStack installation**, see: [`microstack-mgc-deploy/README.md`](./microstack-mgc-deploy/README.md)
 * For **Multi-Node, Kolla-Ansible installation**, see: [`kolla-ansible-mgc-deploy/README.md`](./kolla-ansible-mgc-deploy/README.md)
-* For **Lab Multi-Controller (Jumphost)**, see: [`lab-multi-controller/README.md`](./lab-multi-controller/README.md)
+* For **Lab Multi-Controller (MicroStack)**, see: [`lab-multi-controller/README.md`](./lab-multi-controller/README.md)
+* For **Lab Kolla Multi-Controller**, see: [`lab-kolla-multi-controller/README.md`](./lab-kolla-multi-controller/README.md)
 
 ## Prerequisites
 

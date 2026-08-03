@@ -6,6 +6,25 @@ echo "=== Jumphost cloud-init started: $(date) ==="
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Fix DNS (MGC default VPC DHCP may not provide DNS)
+echo "Forcing DNS resolv.conf..."
+rm -f /etc/resolv.conf
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
+# Wait for DNS to work
+for i in $(seq 1 15); do
+  if ping -c 1 -W 2 8.8.8.8 &>/dev/null; then
+    echo "Network reachable."
+    break
+  fi
+  echo "Waiting for network... ($i)"
+  sleep 2
+done
+
+# Fix hostname resolution for sudo
+echo "$(hostname -I | awk '{print $1}') $(hostname)" >> /etc/hosts
+
 echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 sed -i 's|http://br-ne-1[a-z]\.clouds\.br\.archive\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
 sed -i 's|http://archive\.ubuntu\.com/ubuntu/|http://br.archive.ubuntu.com/ubuntu/|g; s|http://security\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
